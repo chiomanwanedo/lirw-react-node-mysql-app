@@ -3,24 +3,6 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 16
-    commands:
-      - echo Installing frontend...
-      - cd frontend && npm install && npm run build && cd ..
-      - echo Installing backend...
-      - cd backend && npm install && cd ..
-  build:
-    commands:
-      - echo Running tests...
-      - cd backend && npm test || true
-      - cd ../frontend && npm test --watchAll=false || true
-  post_build:
-    commands:
-      - echo Zversion: 0.2
-
-phases:
-  install:
-    runtime-versions:
       nodejs: 18
     commands:
       - echo Installing frontend dependencies...
@@ -44,12 +26,6 @@ phases:
       - cp backend/appspec.yml deploy/
       - cp backend/install.sh backend/start.sh deploy/
       - cd deploy && zip -r ../artifact.zip . && cd ..
-
-artifacts:
-  files:
-    - artifact.zip
-ipping app for deployment...
-      - zip -r artifact.zip frontend backend appspec.yml
 
 artifacts:
   files:

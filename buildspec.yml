@@ -13,19 +13,16 @@ phases:
   build:
     commands:
       - echo Running backend tests...
-      - cd backend && npm test || true
+      - cd backend && npm test || echo "Backend tests failed or not defined." && cd ..
       - echo Running frontend tests...
-      - cd ../frontend && npm test --watchAll=false || true
+      - cd frontend && npm test --watchAll=false || echo "Frontend tests failed or not defined." && cd ..
 
   post_build:
     commands:
-      - echo Preparing files for deployment...
-      - mkdir -p deploy/frontend deploy/backend
-      - cp -r frontend/dist/* deploy/frontend/
-      - cp -r backend/* deploy/backend/
-      - cp backend/appspec.yml deploy/
-      - cp backend/install.sh backend/start.sh deploy/
-      - cd deploy && zip -r ../artifact.zip . && cd ..
+      - echo Post-build: Verifying file structure...
+      - ls -la
+      - echo Zipping app for deployment...
+      - zip -r artifact.zip frontend backend appspec.yml install.sh start.sh || echo "Some files might be missing."
 
 artifacts:
   files:

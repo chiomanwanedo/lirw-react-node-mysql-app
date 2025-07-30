@@ -17,7 +17,7 @@ phases:
   post_build:
     commands:
       - echo Zipping app for deployment...
-      - zip -r artifact.zip frontend backend appspec.yml scripts
+      - zip -r artifact.zip frontend backend appspec.yml
 
 artifacts:
   files:

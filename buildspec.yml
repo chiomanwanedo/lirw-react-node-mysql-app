@@ -5,24 +5,33 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - echo Installing frontend dependencies...
-      - cd frontend && npm install && npm run build && cd ..
-      - echo Installing backend dependencies...
-      - cd backend && npm install && cd ..
+      - echo "Installing frontend dependencies..."
+      - cd frontend
+      - npm install
+      - npm run build
+      - cd ..
+      - echo "Installing backend dependencies..."
+      - cd backend
+      - npm install
+      - cd ..
 
   build:
     commands:
-      - echo Running backend tests...
-      - cd backend && npm test || echo "Backend tests failed or not defined." && cd ..
-      - echo Running frontend tests...
-      - cd frontend && npm test --watchAll=false || echo "Frontend tests failed or not defined." && cd ..
+      - echo "Running backend tests..."
+      - cd backend
+      - npm test || echo "Backend tests failed or not defined."
+      - cd ..
+      - echo "Running frontend tests..."
+      - cd frontend
+      - npm test --watchAll=false || echo "Frontend tests failed or not defined."
+      - cd ..
 
   post_build:
     commands:
-      - echo Post-build: Verifying file structure...
+      - echo "Listing files before zipping..."
       - ls -la
-      - echo Zipping app for deployment...
-      - zip -r artifact.zip frontend backend appspec.yml install.sh start.sh || echo "Some files might be missing."
+      - echo "Zipping app for deployment..."
+      - zip -r artifact.zip frontend backend
 
 artifacts:
   files:

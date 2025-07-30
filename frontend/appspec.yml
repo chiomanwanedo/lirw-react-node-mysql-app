@@ -1,16 +1,18 @@
 version: 0.0
 os: linux
 files:
-  - source: .
+  - source: frontend
     destination: /home/ec2-user/frontend
+  - source: scripts
+    destination: /home/ec2-user/scripts
 
 hooks:
   AfterInstall:
-    - location: install.sh
+    - location: scripts/install.sh
       timeout: 300
       runas: ec2-user
 
   ApplicationStart:
-    - location: start.sh
+    - location: scripts/start.sh
       timeout: 300
       runas: ec2-user

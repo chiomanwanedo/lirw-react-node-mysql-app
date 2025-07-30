@@ -16,7 +16,39 @@ phases:
       - cd ../frontend && npm test --watchAll=false || true
   post_build:
     commands:
-      - echo Zipping app for deployment...
+      - echo Zversion: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo Installing frontend dependencies...
+      - cd frontend && npm install && npm run build && cd ..
+      - echo Installing backend dependencies...
+      - cd backend && npm install && cd ..
+
+  build:
+    commands:
+      - echo Running backend tests...
+      - cd backend && npm test || true
+      - echo Running frontend tests...
+      - cd ../frontend && npm test --watchAll=false || true
+
+  post_build:
+    commands:
+      - echo Preparing files for deployment...
+      - mkdir -p deploy/frontend deploy/backend
+      - cp -r frontend/dist/* deploy/frontend/
+      - cp -r backend/* deploy/backend/
+      - cp backend/appspec.yml deploy/
+      - cp backend/install.sh backend/start.sh deploy/
+      - cd deploy && zip -r ../artifact.zip . && cd ..
+
+artifacts:
+  files:
+    - artifact.zip
+ipping app for deployment...
       - zip -r artifact.zip frontend backend appspec.yml
 
 artifacts:

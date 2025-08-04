@@ -6,6 +6,11 @@ files:
     destination: /home/ec2-user/backend
 
 hooks:
+  BeforeInstall:
+    - location: before_install.sh
+      timeout: 300
+      runas: ec2-user
+
   AfterInstall:
     - location: install.sh
       timeout: 300

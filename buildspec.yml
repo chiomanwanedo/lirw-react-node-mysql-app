@@ -29,10 +29,16 @@ phases:
 
   post_build:
     commands:
-      - echo "Zipping app for deployment..."
-      - zip -r artifact.zip frontend backend
+      - echo "Zipping backend..."
+      - cd backend
+      - zip -r ../backend.zip .     # ✅ zips backend content into root
+      - cd ..
+      - echo "Zipping frontend..."
+      - cd frontend
+      - zip -r ../frontend.zip .    # ✅ zips frontend content into root
+      - cd ..
 
 artifacts:
   files:
-    - artifact.zip
-  discard-paths: no
+    - backend.zip
+    - frontend.zip

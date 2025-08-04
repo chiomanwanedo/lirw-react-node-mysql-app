@@ -1,15 +1,7 @@
 #!/bin/bash
-
 cd /home/ec2-user/backend
 
-# Ensure the correct ownership
-sudo chown -R ec2-user:ec2-user .
-
-# Install PM2 globally (safe to run multiple times)
-sudo npm install -g pm2
-
-# Stop any existing backend instance (optional, helpful during redeploys)
+# Start the backend server using PM2 (or node if PM2 isn't preferred)
+sudo npm install -g pm2  # Safe even if PM2 is already installed
 pm2 delete server || true
-
-# Start the server using PM2
 pm2 start server.js --name server

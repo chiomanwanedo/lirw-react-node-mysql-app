@@ -2,8 +2,8 @@ version: 0.0
 os: linux
 
 files:
-  - source: frontend
-    destination: /home/ec2-user/frontend
+  - source: .
+    destination: /home/ec2-user/deployment-temp
 
 hooks:
   AfterInstall:

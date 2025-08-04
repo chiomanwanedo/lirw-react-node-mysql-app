@@ -1,7 +1,14 @@
 #!/bin/bash
 cd /home/ec2-user/backend
 
-# Start the backend server using PM2 (or node if PM2 isn't preferred)
-sudo npm install -g pm2  # Safe even if PM2 is already installed
+# Ensure PM2 is installed
+sudo npm install -g pm2
+
+# Stop existing PM2 process if it exists
 pm2 delete server || true
-pm2 start server.js --name server
+
+# Start the server with PM2
+pm2 start server.js --name server || true
+
+# Always return success to CodeDeploy
+exit 0

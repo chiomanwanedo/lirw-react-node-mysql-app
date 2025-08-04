@@ -5,6 +5,7 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
+      - set -e
       - echo "Installing frontend dependencies..."
       - cd frontend
       - npm install
@@ -28,11 +29,10 @@ phases:
 
   post_build:
     commands:
-      - echo "Listing files before zipping..."
-      - ls -la
       - echo "Zipping app for deployment..."
       - zip -r artifact.zip frontend backend
 
 artifacts:
   files:
     - artifact.zip
+  discard-paths: no

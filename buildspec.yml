@@ -9,10 +9,6 @@ phases:
       - cd backend
       - npm install
 
-  build:
-    commands:
-      - echo "Backend build completed (if applicable)."
-
   post_build:
     commands:
       - echo "Preparing CodeDeploy artifact..."

@@ -13,10 +13,11 @@ phases:
     commands:
       - echo "Preparing CodeDeploy artifact..."
       - cd ..
-      - mkdir -p output
+      - mkdir output
       - cp -r backend/* output/
       - cp backend/appspec.yml output/
       - cp -r backend/scripts output/
+      - ls -la output/
 
 artifacts:
   files:

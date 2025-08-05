@@ -1,22 +1,15 @@
 version: 0.0
 os: linux
-
 files:
-  - source: .
+  - source: /
     destination: /home/ec2-user/backend
 
 hooks:
-  BeforeInstall:
-    - location: before_install.sh
-      timeout: 300
-      runas: ec2-user
-
   AfterInstall:
-    - location: install.sh
+    - location: scripts/install.sh
       timeout: 300
       runas: ec2-user
-
   ApplicationStart:
-    - location: start.sh
+    - location: scripts/start.sh
       timeout: 300
       runas: ec2-user

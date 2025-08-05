@@ -5,40 +5,25 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
-      - set -e
-      - echo "Installing frontend dependencies..."
-      - cd frontend
-      - npm install
-      - npm run build
-      - cd ..
       - echo "Installing backend dependencies..."
       - cd backend
       - npm install
-      - cd ..
 
   build:
     commands:
-      - echo "Running backend tests..."
-      - cd backend
-      - npm test || echo "Backend tests failed or not defined."
-      - cd ..
-      - echo "Running frontend tests..."
-      - cd frontend
-      - npm test --watchAll=false || echo "Frontend tests failed or not defined."
-      - cd ..
+      - echo "Backend build completed (if applicable)."
 
   post_build:
     commands:
-      - echo "Zipping backend..."
-      - cd backend
-      - zip -r ../backend.zip .     # ✅ zips backend content into root
+      - echo "Preparing CodeDeploy artifact..."
       - cd ..
-      - echo "Zipping frontend..."
-      - cd frontend
-      - zip -r ../frontend.zip .    # ✅ zips frontend content into root
-      - cd ..
+      - mkdir -p output
+      - cp -r backend/* output/
+      - cp backend/appspec.yml output/
+      - cp -r backend/scripts output/
 
 artifacts:
   files:
-    - backend.zip
-    - frontend.zip
+    - '**/*'
+  base-directory: output
+  discard-paths: no

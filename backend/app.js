@@ -3,7 +3,7 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const routes = require('./routes');
 const cors = require('cors');
-const db = require('./configs/db'); // Import the db connection
+const db = require('./configs/db');
 
 const app = express();
 
@@ -18,7 +18,13 @@ db.connect((err) => {
    console.log('Connected to MySQL Database');
 });
 
-// Add your routes here
-app.use('/api', routes);
+// ✅ New test route
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working!' });
+});
+
+// ✅ New base paths
+app.use('/api/books', require('./routes/books'));
+app.use('/api/authors', require('./routes/authors'));
 
 module.exports = app;

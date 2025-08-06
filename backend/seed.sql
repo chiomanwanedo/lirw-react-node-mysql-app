@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS book (
     FOREIGN KEY (authorId) REFERENCES author(id)
 );
 
--- Insert Authors
-INSERT INTO author (id, name, birthday, bio) VALUES
+-- Insert Authors (using INSERT IGNORE to avoid duplicates)
+INSERT IGNORE INTO author (id, name, birthday, bio) VALUES
 (1, 'George Orwell', '1903-06-25', 'English novelist known for 1984 and Animal Farm'),
 (2, 'Jane Austen', '1775-12-16', 'Romantic fiction pioneer'),
 (3, 'J.K. Rowling', '1965-07-31', 'Author of the Harry Potter series'),
@@ -42,8 +42,8 @@ INSERT INTO author (id, name, birthday, bio) VALUES
 (19, 'Suzanne Collins', '1962-08-10', 'Author of The Hunger Games'),
 (20, 'C.S. Lewis', '1898-11-29', 'Wrote The Chronicles of Narnia');
 
--- Insert Books
-INSERT INTO book (title, releaseDate, description, pages, authorId, createdAt, updatedAt) VALUES
+-- Insert Books (using INSERT IGNORE to avoid duplicates)
+INSERT IGNORE INTO book (title, releaseDate, description, pages, authorId, createdAt, updatedAt) VALUES
 ('1984', '1949-06-08', 'Dystopian future surveillance state', 328, 1, NOW(), NOW()),
 ('Pride and Prejudice', '1813-01-28', 'Romantic novel set in Georgian England', 432, 2, NOW(), NOW()),
 ('Harry Potter and the Philosopher\'s Stone', '1997-06-26', 'A young wizard\'s first year at Hogwarts', 223, 3, NOW(), NOW()),

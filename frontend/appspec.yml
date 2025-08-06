@@ -1,6 +1,5 @@
 version: 0.0
 os: linux
-
 files:
   - source: /
     destination: /home/ec2-user/frontend
@@ -11,7 +10,8 @@ hooks:
     - location: scripts/install.sh
       timeout: 300
       runas: ec2-user
+
   ApplicationStart:
     - location: scripts/start.sh
       timeout: 300
-      runas: root
+      runas: ec2-user

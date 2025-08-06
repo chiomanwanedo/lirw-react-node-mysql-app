@@ -10,12 +10,12 @@ phases:
   build:
     commands:
       - npm run build
-      - mkdir -p ../frontend-output
-      - cp -r dist ../frontend-output/
-      - cp appspec.yml ../frontend-output/
-      - cp -r scripts ../frontend-output/
+      - mkdir -p output
+      - cp -r dist output/
+      - cp appspec.yml output/
+      - cp -r scripts output/
 
 artifacts:
   files:
     - '**/*'
-  base-directory: ../frontend-output
+  base-directory: frontend/output

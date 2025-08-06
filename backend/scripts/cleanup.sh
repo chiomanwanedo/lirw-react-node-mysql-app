@@ -1,11 +1,9 @@
 #!/bin/bash
 
-echo "Cleaning backend folder but keeping seed.sql..."
+echo "Fully cleaning backend folder..."
 
 BACKEND_DIR="/home/ec2-user/backend"
 
-# Delete all files except seed.sql
-find "$BACKEND_DIR" -type f ! -name 'seed.sql' -delete
-
-# Delete all subdirectories (like node_modules, scripts, etc.)
-find "$BACKEND_DIR" -mindepth 1 -type d -exec rm -rf {} +
+# Delete all files and folders (including seed.sql)
+rm -rf "$BACKEND_DIR"/*
+rm -rf "$BACKEND_DIR"/.* 2>/dev/null || true

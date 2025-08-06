@@ -1,0 +1,20 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm install
+  build:
+    commands:
+      - npm run build
+      - mkdir -p ../frontend-output
+      - cp -r dist ../frontend-output/
+      - cp appspec.yml ../frontend-output/
+      - cp -r scripts ../frontend-output/
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: ../frontend-output

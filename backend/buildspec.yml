@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - npm install
+  post_build:
+    commands:
+      - mkdir -p ../backend-output
+      - cp -r * ../backend-output/
+      - cp appspec.yml ../backend-output/
+      - cp -r scripts ../backend-output/
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: ../backend-output

@@ -5,9 +5,11 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
+      - cd frontend
       - npm install
   build:
     commands:
+      - cd frontend
       - npm run build
       - mkdir -p ../frontend-output
       - cp -r dist ../frontend-output/
@@ -17,4 +19,4 @@ phases:
 artifacts:
   files:
     - '**/*'
-  base-directory: ../frontend-output
+  base-directory: frontend-output

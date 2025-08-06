@@ -7,17 +7,18 @@ phases:
     commands:
       - cd backend
       - npm install
+      - cd ..
 
   post_build:
     commands:
       - echo "⚙️ Preparing backend CodeDeploy artifact..."
-      - mkdir -p backend/output
-      - shopt -s extglob
-      - cp -r backend/!(output) backend/output/
-      - cp backend/appspec.yml backend/output/
-      - cp -r backend/scripts backend/output/
+      - mkdir -p backend-output
+      - cp -r backend/* backend-output/
+      - cp backend/appspec.yml backend-output/
+      - cp -r backend/scripts backend-output/
 
 artifacts:
   files:
     - '**/*'
-  base-directory: backend/output
+  base-directory: backend-output
+  discard-paths: no

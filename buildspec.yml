@@ -5,22 +5,42 @@ phases:
     runtime-versions:
       nodejs: 18
     commands:
+      - echo "Installing frontend dependencies..."
+      - cd frontend
+      - npm install
+      - cd ..
       - echo "Installing backend dependencies..."
       - cd backend
       - npm install
-
-  post_build:
-    commands:
-      - echo "Preparing CodeDeploy artifact..."
       - cd ..
-      - mkdir output
-      - cp -r backend/* output/
-      - cp backend/appspec.yml output/
-      - cp -r backend/scripts output/
-      - ls -la output/
+
+  build:
+    commands:
+      - echo "Building frontend..."
+      - cd frontend
+      - npm run build
+      - cd ..
+      - echo "Preparing frontend artifact..."
+      - mkdir -p frontend-output
+      - cp -r frontend/dist frontend-output/
+      - cp frontend/appspec.yml frontend-output/
+      - cp -r frontend/scripts frontend-output/
+
+      - echo "Preparing backend artifact..."
+      - mkdir -p backend-output
+      - cp -r backend/* backend-output/
+      - cp backend/appspec.yml backend-output/
+      - cp -r backend/scripts backend-output/
 
 artifacts:
   files:
     - '**/*'
-  base-directory: output
-  discard-paths: no
+  secondary-artifacts:
+    frontendArtifact:
+      base-directory: frontend-output
+      files:
+        - '**/*'
+    backendArtifact:
+      base-directory: backend-output
+      files:
+        - '**/*'

@@ -1,4 +1,4 @@
-import { Alert, Button, Table } from 'antd';
+import { Alert, Button, Table, Input, DatePicker } from 'antd';
 import './App.css';
 import { useEffect, useState } from 'react';
 import { IconEdit } from './components/IconEdit';
@@ -9,11 +9,13 @@ import { Author } from './models/Author';
 import { AddEditAuthorModal } from './components/AddEditAuthorModal';
 import { ViewAuthorModal } from './components/ViewAuthorModal';
 import { DeleteAuthorModal } from './components/DeleteAuthorModal';
+import { DownloadTableExcel } from 'react-export-table-to-excel';
+import { ColumnsType } from 'antd/es/table';
+import { Dayjs } from 'dayjs';
 
-// ✅ Vite-compatible environment variable
 const API_URL = import.meta.env.VITE_API_URL;
 
-const columns = [
+const columns: ColumnsType<any> = [
   { title: 'ID', dataIndex: 'id', key: 'id' },
   { title: 'Author', dataIndex: 'name', key: 'name' },
   { title: 'Birthday', dataIndex: 'birthday', key: 'birthday' },
@@ -34,25 +36,23 @@ function AuthorsPage() {
   const [isErrorAlertVisible, setIsErrorAlertVisible] = useState(false);
   const [message, setMessage] = useState('');
   const [isEdit, setIsEdit] = useState(false);
+  const [filterText, setFilterText] = useState('');
+  const [filterDate, setFilterDate] = useState<Dayjs | null>(null);
+  const tableRef = useState(null);
 
   useEffect(() => {
     fetchAuthors();
   }, []);
 
   useEffect(() => {
-    formatAuthorsForDisplay(authors);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authors]);
+    applyFilters();
+  }, [authors, filterText, filterDate]);
 
   const fetchAuthors = async () => {
     try {
       const response = await fetch(`${API_URL}/authors`);
       const { authors, message } = await response.json();
-
-      if (!response.ok) {
-        throw new Error(message);
-      }
-
+      if (!response.ok) throw new Error(message);
       setAuthors(authors);
     } catch (error) {
       console.log(error);
@@ -60,6 +60,25 @@ function AuthorsPage() {
       setIsErrorAlertVisible(true);
       setTimeout(() => setIsErrorAlertVisible(false), 5000);
     }
+  };
+
+  const applyFilters = () => {
+    let filtered = [...authors];
+
+    if (filterText) {
+      filtered = filtered.filter((author) =>
+        author.name.toLowerCase().includes(filterText.toLowerCase()) ||
+        author.bio.toLowerCase().includes(filterText.toLowerCase())
+      );
+    }
+
+    if (filterDate) {
+      filtered = filtered.filter((author) =>
+        author.birthday.startsWith(filterDate.format('YYYY-MM-DD'))
+      );
+    }
+
+    formatAuthorsForDisplay(filtered);
   };
 
   const editAuthor = async (author: Author) => {
@@ -71,11 +90,7 @@ function AuthorsPage() {
           body: JSON.stringify(author),
         });
         const { message, authors } = await response.json();
-
-        if (!response.ok) {
-          throw new Error(message);
-        }
-
+        if (!response.ok) throw new Error(message);
         setAuthors(authors);
         setMessage(message);
         setIsSuccessAlertVisible(true);
@@ -97,11 +112,7 @@ function AuthorsPage() {
         body: JSON.stringify(author),
       });
       const { message, authors } = await response.json();
-
-      if (!response.ok) {
-        throw new Error(message);
-      }
-
+      if (!response.ok) throw new Error(message);
       setAuthors(authors);
       setMessage(message);
       setIsSuccessAlertVisible(true);
@@ -115,11 +126,8 @@ function AuthorsPage() {
   };
 
   const authorAddEdit = (author: Author) => {
-    if (isEdit) {
-      editAuthor(author);
-    } else {
-      addAuthor(author);
-    }
+    if (isEdit) editAuthor(author);
+    else addAuthor(author);
   };
 
   const authorDelete = async () => {
@@ -130,11 +138,7 @@ function AuthorsPage() {
           headers: { 'Content-Type': 'application/json' },
         });
         const { message, authors } = await response.json();
-
-        if (!response.ok) {
-          throw new Error(message);
-        }
-
+        if (!response.ok) throw new Error(message);
         setAuthors(authors);
         setMessage(message);
         setIsSuccessAlertVisible(true);
@@ -204,17 +208,42 @@ function AuthorsPage() {
           <Button type='primary' size='large' className='rounded-none' onClick={handleAuthorAdd}>
             <span className='font-bold'>+</span>&nbsp; Add Author
           </Button>
-          {isSuccessAlertVisible && (
-            <Alert message={message} type='success' showIcon closable />
-          )}
-          {isErrorAlertVisible && (
-            <Alert message={message} type='error' showIcon closable />
-          )}
+          <DownloadTableExcel
+            filename='authors_data'
+            sheet='authors'
+            currentTableRef={tableRef.current}
+          >
+            <Button>Export</Button>
+          </DownloadTableExcel>
         </div>
+
+        <div className='flex space-x-4'>
+          <Input
+            placeholder='Filter by name or bio...'
+            value={filterText}
+            onChange={(e) => setFilterText(e.target.value)}
+            className='w-64'
+          />
+          <DatePicker
+            placeholder='Filter by birthday'
+            onChange={(date) => setFilterDate(date)}
+          />
+        </div>
+
+        {isSuccessAlertVisible && <Alert message={message} type='success' showIcon closable />}
+        {isErrorAlertVisible && <Alert message={message} type='error' showIcon closable />}
+
         <div>
-          <Table dataSource={dataSource} columns={columns} size='middle' />
+          <Table
+            dataSource={dataSource}
+            columns={columns}
+            size='middle'
+            pagination={{ pageSize: 10 }}
+            ref={tableRef}
+          />
         </div>
       </main>
+
       <AddEditAuthorModal
         initialValues={activeAuthor}
         isEdit={isEdit}

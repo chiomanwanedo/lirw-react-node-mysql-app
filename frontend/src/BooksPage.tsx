@@ -60,6 +60,8 @@ function App() {
   const [isErrorAlertVisible, setIsErrorAlertVisible] = useState(false);
   const [isSuccessAlertVisible, setIsSuccessAlertVisible] = useState(false);
   const [activeBook, setActiveBook] = useState<Book | null>(null);
+  const [showTopTen, setShowTopTen] = useState(true);
+  const [filterQuery, setFilterQuery] = useState('');
 
   useEffect(() => {
     fetchBooks();
@@ -67,9 +69,17 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (books) {
-      const labels = books.map(book => book.title);
-      const data = books.map(book => book.pages);
+    if (books.length > 0) {
+      let filteredBooks = books;
+      if (filterQuery) {
+        filteredBooks = books.filter(book =>
+          book.title.toLowerCase().includes(filterQuery.toLowerCase())
+        );
+      }
+      const displayBooks = showTopTen ? filteredBooks.slice(0, 10) : filteredBooks;
+
+      const labels = displayBooks.map(book => book.title);
+      const data = displayBooks.map(book => book.pages);
 
       setBooksBarChartData({
         labels,
@@ -83,21 +93,11 @@ function App() {
           }
         ]
       });
-    }
-  }, [books]);
 
-  useEffect(() => {
-    if (books) {
       const authorBookCount = new Map();
-
-      for (const book of books) {
+      for (const book of displayBooks) {
         const authorName = book.name;
-
-        if (authorBookCount.has(authorName)) {
-          authorBookCount.set(authorName, authorBookCount.get(authorName) + 1);
-        } else {
-          authorBookCount.set(authorName, 1);
-        }
+        authorBookCount.set(authorName, (authorBookCount.get(authorName) || 0) + 1);
       }
 
       const chartData = {
@@ -115,7 +115,7 @@ function App() {
 
       setPieChartData(chartData);
     }
-  }, [books]);
+  }, [books, showTopTen, filterQuery]);
 
   function generateColors(numColors: number) {
     const colors = [];
@@ -262,6 +262,16 @@ function App() {
           <Button type='primary' size='large' className='rounded-none'>
             <Link to={`authors`}>Authors</Link>
           </Button>
+          <Button type='default' size='large' onClick={() => setShowTopTen(prev => !prev)} className='rounded-none'>
+            {showTopTen ? 'Show All' : 'Show Top 10'}
+          </Button>
+          <input
+            type='text'
+            placeholder='Filter by title...'
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            className='p-2 border ml-4 w-64'
+          />
         </div>
         <div className='p-12 flex justify-between' style={{ height: "100%" }}>
           <div>

@@ -1,6 +1,6 @@
 import { Alert, Button, Table, Input, DatePicker } from 'antd';
 import './App.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { IconEdit } from './components/IconEdit';
 import { IconDelete } from './components/IconDelete';
 import { IconView } from './components/IconView';
@@ -38,7 +38,7 @@ function AuthorsPage() {
   const [isEdit, setIsEdit] = useState(false);
   const [filterText, setFilterText] = useState('');
   const [filterDate, setFilterDate] = useState<Dayjs | null>(null);
-  const tableRef = useState(null);
+  const tableRef = useRef(null);
 
   useEffect(() => {
     fetchAuthors();

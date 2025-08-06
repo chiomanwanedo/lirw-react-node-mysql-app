@@ -17,7 +17,7 @@ DB_HOST="172.31.21.179"
 # Seed DB only once
 if [ ! -f .seeded ]; then
   echo "Seeding the database..."
-  if mysql -h "$DB_HOST" -P 3306 -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < db.sql; then
+  if mysql -h "$DB_HOST" -P 3306 -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" < seed.sql; then
     echo "Seeding successful. Marking as seeded."
     touch .seeded
   else

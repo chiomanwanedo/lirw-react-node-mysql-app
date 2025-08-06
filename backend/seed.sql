@@ -1,3 +1,24 @@
+-- Create Authors Table if it doesn't exist
+CREATE TABLE IF NOT EXISTS author (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    birthday DATE,
+    bio TEXT
+);
+
+-- Create Books Table if it doesn't exist
+CREATE TABLE IF NOT EXISTS book (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    releaseDate DATE,
+    description TEXT,
+    pages INT,
+    authorId INT,
+    createdAt DATETIME,
+    updatedAt DATETIME,
+    FOREIGN KEY (authorId) REFERENCES author(id)
+);
+
 -- Insert Authors
 INSERT INTO author (id, name, birthday, bio) VALUES
 (1, 'George Orwell', '1903-06-25', 'English novelist known for 1984 and Animal Farm'),

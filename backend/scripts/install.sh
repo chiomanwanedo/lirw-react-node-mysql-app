@@ -6,7 +6,6 @@ echo "Fixing permissions..."
 sudo chown -R ec2-user:ec2-user .
 
 echo "Installing backend dependencies..."
-npm config set unsafe-perm true
 npm install
 
 # Database config

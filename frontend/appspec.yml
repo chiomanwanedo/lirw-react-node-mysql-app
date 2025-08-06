@@ -2,14 +2,14 @@ version: 0.0
 os: linux
 
 files:
-  - source: /dist
-    destination: /var/www/html
+  - source: /
+    destination: /home/ec2-user/frontend
     overwrite: yes
 
 hooks:
-  BeforeInstall:
-    - location: scripts/install.sh
-      runas: root
   AfterInstall:
+    - location: scripts/install.sh
+      runas: ec2-user
+  ApplicationStart:
     - location: scripts/start.sh
       runas: root

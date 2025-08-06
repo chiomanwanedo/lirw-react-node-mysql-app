@@ -150,7 +150,7 @@ function App() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/books`);
+      const response = await fetch(`${API_URL}/books`);
       const { books, message } = await response.json();
 
       if (!response.ok) {

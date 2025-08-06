@@ -128,7 +128,7 @@ function App() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/books`);
+      const response = await fetch(`${API_URL}/books`);
       const { books, message } = await response.json();
 
       if (!response.ok) {
@@ -146,7 +146,7 @@ function App() {
 
   const fetchAuthors = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/authors`);
+      const response = await fetch(`${API_URL}/authors`);
       const { authors, message } = await response.json();
 
       if (!response.ok) {
@@ -165,7 +165,7 @@ function App() {
   const editBook = async (book: Book) => {
     try {
       if (activeBook) {
-        const response = await fetch(`${API_URL}/api/books/${activeBook.id}`, {
+        const response = await fetch(`${API_URL}/books/${activeBook.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -194,7 +194,7 @@ function App() {
 
   const addBook = async (book: Book) => {
     try {
-      const response = await fetch(`${API_URL}/api/books`, {
+      const response = await fetch(`${API_URL}/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -223,7 +223,7 @@ function App() {
   const bookDelete = async () => {
     try {
       if (activeBook) {
-        const response = await fetch(`${API_URL}/api/books/${activeBook.id}`, {
+        const response = await fetch(`${API_URL}/books/${activeBook.id}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',

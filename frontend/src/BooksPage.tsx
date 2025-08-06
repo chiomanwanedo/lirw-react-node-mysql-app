@@ -1,86 +1,134 @@
-import { Alert, Button, Table } from 'antd'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Button } from 'antd'
 import './App.css'
-import { useEffect, useState } from 'react'
-import { IconEdit } from './components/IconEdit';
-import { IconDelete } from './components/IconDelete';
-import { IconView } from './components/IconView';
 import { Link } from 'react-router-dom';
-import { AddEditBookModal } from './components/AddEditBookModal';
-import { ViewBookModal } from './components/ViewBookModal';
-import { DeleteBookModal } from './components/DeleteBookModal';
-import { Book, BookDTO, BookFormDTO } from './models/Books';
-import { Author } from './models/Author';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartData,
+  ArcElement
+} from 'chart.js';
+import { Bar, Pie } from 'react-chartjs-2';
+import { useEffect, useState } from 'react';
+import { Book } from './models/Books';
+
 const API_URL = import.meta.env.VITE_API_URL;
 
-const columns = [
-  {
-    title: 'ID',
-    dataIndex: 'id',
-    key: 'id',
-  },
-  {
-    title: 'Title',
-    dataIndex: 'title',
-    key: 'title',
-  },
-  {
-    title: 'Description',
-    dataIndex: 'description',
-    key: 'description',
-  },
-  {
-    title: 'Release Date',
-    dataIndex: 'releaseDate',
-    key: 'releaseDate',
-  },
-  {
-    title: 'Author',
-    dataIndex: 'author',
-    key: 'author',
-  },
-  {
-    title: 'Created Date',
-    dataIndex: 'createdAt',
-    key: 'createdAt',
-  },
-  {
-    title: 'Updated Date',
-    dataIndex: 'updatedAt',
-    key: 'updatedAt',
-  },
-  {
-    title: 'Actions',
-    dataIndex: 'actions',
-    key: 'actions',
-  },
-];
+ChartJS.register(
+  ArcElement,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
-function BooksPage() {
+const barChartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top' as const,
+    },
+    title: {
+      display: true,
+      text: 'Book Length Distribution'
+    },
+  },
+  scales: {
+    y: {
+      min: 150,
+      max: 700,
+      ticks: {
+        stepSize: 10
+      }
+    }
+  }
+};
+
+function App() {
   const [books, setBooks] = useState<Book[]>([]);
-  const [authors, setAuthors] = useState<Author[]>([]);
-  const [dataSource, setDataSource] = useState<BookDTO[]>([]);
-  const [activeBook, setActiveBook] = useState<Book>();
-  const [isAddEditModalOpen, setIsAddEditModalOpen] = useState(false);
-  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isSuccessAlertVisible, setIsSuccessAlertVisible] = useState(false);
-  const [isErrorAlertVisible, setIsErrorAlertVisible] = useState(false);
+  const [authors, setAuthors] = useState<any[]>([]);
+  const [booksBarChartData, setBooksBarChartData] = useState<ChartData<"bar">>();
+  const [pieChartData, setPieChartData] = useState<ChartData<"pie">>();
   const [message, setMessage] = useState('');
-  const [isEdit, setIsEdit] = useState(false);
+  const [isErrorAlertVisible, setIsErrorAlertVisible] = useState(false);
+  const [isSuccessAlertVisible, setIsSuccessAlertVisible] = useState(false);
+  const [activeBook, setActiveBook] = useState<Book | null>(null);
 
   useEffect(() => {
     fetchBooks();
     fetchAuthors();
-  }, [])
+  }, []);
 
   useEffect(() => {
-    formatBooksForDisplay(books);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [books])
+    if (books) {
+      const labels = books.map(book => book.title);
+      const data = books.map(book => book.pages);
+
+      setBooksBarChartData({
+        labels,
+        datasets: [
+          {
+            label: "Total Pages",
+            data: data,
+            backgroundColor: generateColors(data.length),
+            borderColor: generateColors(data.length),
+            borderWidth: 1,
+          }
+        ]
+      });
+    }
+  }, [books]);
+
+  useEffect(() => {
+    if (books) {
+      const authorBookCount = new Map();
+
+      for (const book of books) {
+        const authorName = book.name;
+
+        if (authorBookCount.has(authorName)) {
+          authorBookCount.set(authorName, authorBookCount.get(authorName) + 1);
+        } else {
+          authorBookCount.set(authorName, 1);
+        }
+      }
+
+      const chartData = {
+        labels: Array.from(authorBookCount.keys()),
+        datasets: [
+          {
+            label: 'Book Count',
+            data: Array.from(authorBookCount.values()),
+            backgroundColor: generateColors(authorBookCount.size),
+            borderColor: generateColors(authorBookCount.size),
+            borderWidth: 1,
+          },
+        ],
+      };
+
+      setPieChartData(chartData);
+    }
+  }, [books]);
+
+  function generateColors(numColors: number) {
+    const colors = [];
+    const colorPalette = ['#ff6384', '#38aecc', '#ffd700', '#4caf50', '#9c27b0'];
+    for (let i = 0; i < numColors; i++) {
+      colors.push(colorPalette[i % colorPalette.length]);
+    }
+    return colors;
+  }
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch(`${API_URL}/books`);
+      const response = await fetch(`${API_URL}/api/books`);
       const { books, message } = await response.json();
 
       if (!response.ok) {
@@ -90,19 +138,15 @@ function BooksPage() {
       setBooks(books);
     } catch (error) {
       console.log(error);
-
       setMessage((error as Error).message);
       setIsErrorAlertVisible(true);
-
-      setTimeout(() => {
-        setIsErrorAlertVisible(false);
-      }, 5000);
+      setTimeout(() => setIsErrorAlertVisible(false), 5000);
     }
   };
 
   const fetchAuthors = async () => {
     try {
-      const response = await fetch(`${API_URL}/authors`);
+      const response = await fetch(`${API_URL}/api/authors`);
       const { authors, message } = await response.json();
 
       if (!response.ok) {
@@ -112,20 +156,16 @@ function BooksPage() {
       setAuthors(authors);
     } catch (error) {
       console.log(error);
-
       setMessage((error as Error).message);
       setIsErrorAlertVisible(true);
-
-      setTimeout(() => {
-        setIsErrorAlertVisible(false);
-      }, 5000);
+      setTimeout(() => setIsErrorAlertVisible(false), 5000);
     }
   };
 
-  const editBook = async (book: BookFormDTO) => {
+  const editBook = async (book: Book) => {
     try {
       if (activeBook) {
-        const response = await fetch(`${API_URL}/books/${activeBook.id}`, {
+        const response = await fetch(`${API_URL}/api/books/${activeBook.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -142,26 +182,19 @@ function BooksPage() {
         setBooks(books);
         setMessage(message);
         setIsSuccessAlertVisible(true);
-
-        setTimeout(() => {
-          setIsSuccessAlertVisible(false);
-        }, 5000);
+        setTimeout(() => setIsSuccessAlertVisible(false), 5000);
       }
     } catch (error) {
       console.error(error);
-
       setMessage((error as Error).message);
       setIsErrorAlertVisible(true);
-
-      setTimeout(() => {
-        setIsErrorAlertVisible(false);
-      }, 5000);
+      setTimeout(() => setIsErrorAlertVisible(false), 5000);
     }
-  }
+  };
 
-  const addBook = async (book: BookFormDTO) => {
+  const addBook = async (book: Book) => {
     try {
-      const response = await fetch(`${API_URL}/books`, {
+      const response = await fetch(`${API_URL}/api/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -178,35 +211,19 @@ function BooksPage() {
       setBooks(books);
       setMessage(message);
       setIsSuccessAlertVisible(true);
-
-      setTimeout(() => {
-        setIsSuccessAlertVisible(false);
-      }, 5000);
+      setTimeout(() => setIsSuccessAlertVisible(false), 5000);
     } catch (error) {
       console.error(error);
-
       setMessage((error as Error).message);
       setIsErrorAlertVisible(true);
-
-      setTimeout(() => {
-        setIsErrorAlertVisible(false);
-      }, 5000);
+      setTimeout(() => setIsErrorAlertVisible(false), 5000);
     }
-  }
-
-  const bookAddEdit = (book: BookFormDTO) => {
-    if (isEdit) {
-      editBook(book);
-      return;
-    }
-
-    addBook(book);
-  }
+  };
 
   const bookDelete = async () => {
     try {
       if (activeBook) {
-        const response = await fetch(`${API_URL}/books/${activeBook.id}`, {
+        const response = await fetch(`${API_URL}/api/books/${activeBook.id}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -222,122 +239,49 @@ function BooksPage() {
         setBooks(books);
         setMessage(message);
         setIsSuccessAlertVisible(true);
-
-        setTimeout(() => {
-          setIsSuccessAlertVisible(false);
-        }, 5000);
+        setTimeout(() => setIsSuccessAlertVisible(false), 5000);
       }
     } catch (error) {
       console.error(error);
-
       setMessage((error as Error).message);
       setIsErrorAlertVisible(true);
-
-      setTimeout(() => {
-        setIsErrorAlertVisible(false);
-      }, 5000);
+      setTimeout(() => setIsErrorAlertVisible(false), 5000);
     }
-  }
-
-  const handleBookAdd = () => {
-    setActiveBook(undefined);
-    setIsEdit(false);
-    setIsAddEditModalOpen(true);
-  }
-
-  const handleBookEdit = (book: Book) => {
-    setActiveBook(book);
-    setIsEdit(true);
-    setIsAddEditModalOpen(true);
-  }
-
-  const handleBookView = (book: Book) => {
-    setActiveBook(book);
-    setIsViewModalOpen(true);
-  }
-
-  const handleBookDelete = (book: Book) => {
-    setActiveBook(book);
-    setIsDeleteModalOpen(true);
-  }
-
-  const formatBooksForDisplay = (books: Book[]) => {
-    if (books.length > 0) {
-      const dataSource: BookDTO[] = [];
-
-      for (const book of books) {
-        const bookObj = {
-          key: book.id,
-          id: book.id,
-          title: book.title,
-          releaseDate: book.releaseDate,
-          description: book.description,
-          pages: book.pages,
-          author: book?.name,
-          createdAt: book.createdAt,
-          updatedAt: book.updatedAt,
-          actions: (
-            <div className='flex space-x-4'>
-              <Button icon={<IconEdit />} onClick={() => handleBookEdit(book)} />
-              <Button type='primary' icon={<IconView />} onClick={() => handleBookView(book)} />
-              <Button type='primary' icon={<IconDelete />} danger onClick={() => handleBookDelete(book)} />
-            </div>
-          )
-        }
-
-        dataSource.push(bookObj);
-      }
-
-      setDataSource(dataSource);
-    }
-  }
+  };
 
   return (
     <div className='h-screen font-mono p-4'>
-      <header className='relative py-2 border-b'>
-        <Button size='large' className='rounded-none absolute'>
-          <Link to={`/`}>⬅️ Dashboard</Link>
-        </Button>
-        <h1 className='text-center font-bold text-5xl'>MANAGE BOOKS</h1>
+      <header className='py-2 border-b'>
+        <h1 className='text-center font-bold text-5xl'>Dashboard</h1>
       </header>
       <main className='py-4 px-4 space-y-6'>
-        <div className='flex justify-between'>
-          <Button type='primary' size='large' className='rounded-none' onClick={handleBookAdd}>
-            <span className='font-bold'>+</span>&nbsp; Add Book
+        <div className='space-x-4'>
+          <Button type='primary' size='large' className='rounded-none'>
+            <Link to={`books`}>Books</Link>
           </Button>
-          {isSuccessAlertVisible && (
-            <Alert
-              message={message}
-              type="success"
-              showIcon
-              closable
-            />
-          )}
-          {isErrorAlertVisible && (
-            <Alert
-              message={message}
-              type="error"
-              showIcon
-              closable
-            />
-          )}
+          <Button type='primary' size='large' className='rounded-none'>
+            <Link to={`authors`}>Authors</Link>
+          </Button>
         </div>
-        <div>
-          <Table dataSource={dataSource} columns={columns} size="middle" />
+        <div className='p-12 flex justify-between' style={{ height: "100%" }}>
+          <div>
+            {pieChartData && <Pie width={500} data={pieChartData} />}
+          </div>
+          <div>
+            {booksBarChartData && (
+              <Bar
+                style={{ display: "block", boxSizing: "border-box", height: "500px", width: "900px" }}
+                width={1800}
+                height={900}
+                options={barChartOptions}
+                data={booksBarChartData}
+              />
+            )}
+          </div>
         </div>
       </main>
-      <AddEditBookModal
-        authors={authors}
-        initialValues={activeBook && { ...activeBook, author: activeBook?.authorId }}
-        isEdit={isEdit}
-        isModalOpen={isAddEditModalOpen}
-        setIsModalOpen={setIsAddEditModalOpen}
-        onOk={bookAddEdit}
-      />
-      <ViewBookModal book={activeBook && { ...activeBook, author: activeBook?.name }} isModalOpen={isViewModalOpen} setIsModalOpen={setIsViewModalOpen} />
-      <DeleteBookModal book={activeBook} isModalOpen={isDeleteModalOpen} setIsModalOpen={setIsDeleteModalOpen} onOk={bookDelete} />
     </div>
-  )
+  );
 }
 
-export default BooksPage
+export default App;

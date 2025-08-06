@@ -19,6 +19,7 @@ import { Book } from './models/Books';
 // import { Author } from './models/Author';
 
 const API_URL = import.meta.env.VITE_API_URL;
+;
 
 ChartJS.register(
   ArcElement,
@@ -149,7 +150,7 @@ function App() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch(`${API_URL}/books`);
+      const response = await fetch(`${API_URL}/api/books`);
       const { books, message } = await response.json();
 
       if (!response.ok) {

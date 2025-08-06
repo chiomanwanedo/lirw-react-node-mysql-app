@@ -10,13 +10,12 @@ phases:
 
   post_build:
     commands:
-      - cd backend
       - echo "⚙️ Preparing backend CodeDeploy artifact..."
-      - mkdir -p output
-      - shopt -s extglob  # Enable pattern matching
-      - cp -r !(output) output/
-      - cp appspec.yml output/
-      - cp -r scripts output/
+      - mkdir -p backend/output
+      - shopt -s extglob
+      - cp -r backend/!(output) backend/output/
+      - cp backend/appspec.yml backend/output/
+      - cp -r backend/scripts backend/output/
 
 artifacts:
   files:

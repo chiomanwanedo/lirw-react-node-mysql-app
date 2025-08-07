@@ -65,7 +65,6 @@ function App() {
   const [pieChartData, setPieChartData] = useState<any>();
   const [showAll, setShowAll] = useState(false);
   const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
-  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBooks();
@@ -76,10 +75,6 @@ function App() {
 
     if (selectedAuthor) {
       filtered = filtered.filter((book) => book.name === selectedAuthor);
-    }
-
-    if (selectedGenre) {
-      filtered = filtered.filter((book) => book.genre === selectedGenre);
     }
 
     const sortedBooks = [...filtered].sort((a, b) => b.pages - a.pages);
@@ -100,18 +95,12 @@ function App() {
         },
       ],
     });
-  }, [books, showAll, selectedAuthor, selectedGenre]);
+  }, [books, showAll, selectedAuthor]);
 
   useEffect(() => {
-    let filteredBooks = [...books];
-
-    if (selectedGenre) {
-      filteredBooks = filteredBooks.filter((book) => book.genre === selectedGenre);
-    }
-
     const authorBookCount = new Map<string, number>();
 
-    for (const book of filteredBooks) {
+    for (const book of books) {
       authorBookCount.set(book.name, (authorBookCount.get(book.name) || 0) + 1);
     }
 
@@ -139,7 +128,7 @@ function App() {
         },
       ],
     });
-  }, [books, selectedGenre]);
+  }, [books]);
 
   const fetchBooks = async () => {
     try {
@@ -209,19 +198,6 @@ function App() {
             {[...new Set(books.map((b) => b.name))].map((author) => (
               <Option key={author} value={author}>
                 {author}
-              </Option>
-            ))}
-          </Select>
-
-          <Select
-            allowClear
-            placeholder='Filter by Genre'
-            style={{ width: 200 }}
-            onChange={(value) => setSelectedGenre(value)}
-          >
-            {[...new Set(books.map((b) => b.genre))].map((genre) => (
-              <Option key={genre} value={genre}>
-                {genre}
               </Option>
             ))}
           </Select>

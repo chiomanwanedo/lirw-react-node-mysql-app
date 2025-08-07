@@ -50,8 +50,8 @@ const barChartOptions = {
     },
     x: {
       ticks: {
-        callback: function (val: any, index: number) {
-          const label = this.getLabelForValue(index);
+        callback: function (val: string | number) {
+          const label = String(val);
           return label.length > 10 ? label.slice(0, 10) + '...' : label;
         },
       },

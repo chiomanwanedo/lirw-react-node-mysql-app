@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button } from 'antd'
-import './App.css'
+import { Button, Select } from 'antd';
+import './App.css';
 import { Link } from 'react-router-dom';
 import {
   Chart as ChartJS,
@@ -10,16 +10,14 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartData,
-  ArcElement
+  ArcElement,
 } from 'chart.js';
 import { Bar, Pie } from 'react-chartjs-2';
 import { useEffect, useState } from 'react';
 import { Book } from './models/Books';
-// import { Author } from './models/Author';
 
+const { Option } = Select;
 const API_URL = import.meta.env.VITE_API_URL;
-;
 
 ChartJS.register(
   ArcElement,
@@ -39,7 +37,7 @@ const barChartOptions = {
     },
     title: {
       display: true,
-      text: 'Book Length Distribution'
+      text: 'Book Length Distribution',
     },
   },
   scales: {
@@ -47,106 +45,101 @@ const barChartOptions = {
       min: 150,
       max: 700,
       ticks: {
-        stepSize: 10
-      }
-    }
-  }
+        stepSize: 10,
+      },
+    },
+    x: {
+      ticks: {
+        callback: function (val: any, index: number) {
+          const label = this.getLabelForValue(index);
+          return label.length > 10 ? label.slice(0, 10) + '...' : label;
+        },
+      },
+    },
+  },
 };
 
 function App() {
   const [books, setBooks] = useState<Book[]>([]);
-  // const [authors, setAuthors] = useState<Author[]>([]);
-  const [booksBarChartData, setBooksBarChartData] = useState<ChartData<"bar">>();
-  // const [authorsBarChartData, setAuthorsBarChartData] = useState<ChartData<"bar">>();
-  const [pieChartData, setPieChartData] = useState<ChartData<"pie">>();
+  const [booksBarChartData, setBooksBarChartData] = useState<any>();
+  const [pieChartData, setPieChartData] = useState<any>();
+  const [showAll, setShowAll] = useState(false);
+  const [selectedAuthor, setSelectedAuthor] = useState<string | null>(null);
+  const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
 
   useEffect(() => {
     fetchBooks();
-    // fetchAuthors();
-  }, [])
+  }, []);
 
   useEffect(() => {
-    if (books) {
-      const labels = books.map(book => book.title);
-      const data = books.map(book => book.pages);
+    let filtered = [...books];
 
-      setBooksBarChartData({
-        labels,
-        datasets: [
-          {
-            label: "Total Pages",
-            data: data,
-            backgroundColor: generateColors(data.length), // Adjust for desired number of colors
-            borderColor: generateColors(data.length), // Adjust for desired number of colors
-            borderWidth: 1,
-          }
-        ]
-      })
+    if (selectedAuthor) {
+      filtered = filtered.filter((book) => book.name === selectedAuthor);
     }
-  }, [books]);
 
-  // useEffect(() => {
-  //   if (authors) {
-  //     const labels = authors.map(author => author.name);
-  //     const data = authors.map(author => author.birthday).map(birthday => {
-  //       const today = new Date();
-  //       const diffInMs = today.getTime() - new Date(birthday).getTime();
-  //       const age = Math.floor(diffInMs / (1000 * 60 * 60 * 24 * 365));
-  //       return age;
-  //     });
+    if (selectedGenre) {
+      filtered = filtered.filter((book) => book.genre === selectedGenre);
+    }
 
-  //     setAuthorsBarChartData({
-  //       labels,
-  //       datasets: [
-  //         {
-  //           label: "Age",
-  //           data: data,
-  //           backgroundColor: 'rgba(53, 162, 235, 0.5)'
-  //         }
-  //       ]
-  //     })
-  //   }
-  // }, [authors]);
+    const sortedBooks = [...filtered].sort((a, b) => b.pages - a.pages);
+    const displayedBooks = showAll ? sortedBooks : sortedBooks.slice(0, 10);
+
+    const labels = displayedBooks.map((book) => book.title);
+    const data = displayedBooks.map((book) => book.pages);
+
+    setBooksBarChartData({
+      labels,
+      datasets: [
+        {
+          label: 'Total Pages',
+          data,
+          backgroundColor: generateColors(data.length),
+          borderColor: generateColors(data.length),
+          borderWidth: 1,
+        },
+      ],
+    });
+  }, [books, showAll, selectedAuthor, selectedGenre]);
 
   useEffect(() => {
-    if (books) {
-      const authorBookCount = new Map();
+    let filteredBooks = [...books];
 
-      for (const book of books) {
-        const authorName = book.name;
-
-        if (authorBookCount.has(authorName)) {
-          authorBookCount.set(authorName, authorBookCount.get(authorName) + 1);
-        } else {
-          authorBookCount.set(authorName, 1);
-        }
-      }
-
-      const chartData = {
-        labels: Array.from(authorBookCount.keys()),
-        datasets: [
-          {
-            label: 'Book Count',
-            data: Array.from(authorBookCount.values()),
-            backgroundColor: generateColors(authorBookCount.size), // Adjust for desired number of colors
-            borderColor: generateColors(authorBookCount.size), // Adjust for desired number of colors
-            borderWidth: 1,
-          },
-        ],
-      };
-
-      setPieChartData(chartData);
+    if (selectedGenre) {
+      filteredBooks = filteredBooks.filter((book) => book.genre === selectedGenre);
     }
-  }, [books])
 
-  function generateColors(numColors: number) {
-    const colors = [];
-    const colorPalette = ['#ff6384', '#38aecc', '#ffd700', '#4caf50', '#9c27b0'];
-    for (let i = 0; i < numColors; i++) {
-      colors.push(colorPalette[i % colorPalette.length]);
+    const authorBookCount = new Map<string, number>();
+
+    for (const book of filteredBooks) {
+      authorBookCount.set(book.name, (authorBookCount.get(book.name) || 0) + 1);
     }
-    return colors;
-  }
+
+    const sorted = Array.from(authorBookCount.entries()).sort((a, b) => b[1] - a[1]);
+    const top10 = sorted.slice(0, 10);
+    const othersCount = sorted.slice(10).reduce((sum, [, count]) => sum + count, 0);
+
+    const labels = top10.map(([name]) => name);
+    const values = top10.map(([, count]) => count);
+
+    if (othersCount > 0) {
+      labels.push('Others');
+      values.push(othersCount);
+    }
+
+    setPieChartData({
+      labels,
+      datasets: [
+        {
+          label: 'Book Count',
+          data: values,
+          backgroundColor: generateColors(labels.length),
+          borderColor: generateColors(labels.length),
+          borderWidth: 1,
+        },
+      ],
+    });
+  }, [books, selectedGenre]);
 
   const fetchBooks = async () => {
     try {
@@ -163,20 +156,25 @@ function App() {
     }
   };
 
-  // const fetchAuthors = async () => {
-  //   try {
-  //     const response = await fetch(`${API_URL}/authors`);
-  //     const { authors, message } = await response.json();
-
-  //     if (!response.ok) {
-  //       throw new Error(message);
-  //     }
-
-  //     setAuthors(authors);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+  function generateColors(numColors: number) {
+    const colors = [];
+    const colorPalette = [
+      '#ff6384',
+      '#36a2eb',
+      '#cc65fe',
+      '#ffce56',
+      '#4caf50',
+      '#ff9f40',
+      '#8e44ad',
+      '#2ecc71',
+      '#f1c40f',
+      '#3498db',
+    ];
+    for (let i = 0; i < numColors; i++) {
+      colors.push(colorPalette[i % colorPalette.length]);
+    }
+    return colors;
+  }
 
   return (
     <div className='h-screen font-mono p-4'>
@@ -191,23 +189,65 @@ function App() {
           <Button type='primary' size='large' className='rounded-none'>
             <Link to={`authors`}>Authors</Link>
           </Button>
+          <Button
+            size='large'
+            type='default'
+            className='rounded-none'
+            onClick={() => setShowAll(!showAll)}
+          >
+            {showAll ? 'Show Top 10 Books' : 'Show All Books'}
+          </Button>
         </div>
-        <div className='p-12 flex justify-between' style={{ height: "100%"}}>
-          <div>
-            {pieChartData && <Pie width={500} data={pieChartData} />}
+
+        <div className='flex flex-wrap gap-4'>
+          <Select
+            allowClear
+            placeholder='Filter by Author'
+            style={{ width: 200 }}
+            onChange={(value) => setSelectedAuthor(value)}
+          >
+            {[...new Set(books.map((b) => b.name))].map((author) => (
+              <Option key={author} value={author}>
+                {author}
+              </Option>
+            ))}
+          </Select>
+
+          <Select
+            allowClear
+            placeholder='Filter by Genre'
+            style={{ width: 200 }}
+            onChange={(value) => setSelectedGenre(value)}
+          >
+            {[...new Set(books.map((b) => b.genre))].map((genre) => (
+              <Option key={genre} value={genre}>
+                {genre}
+              </Option>
+            ))}
+          </Select>
+        </div>
+
+        <div className='flex flex-col lg:flex-row justify-between items-start gap-10 p-4'>
+          <div className='w-full lg:w-1/3'>
+            {pieChartData && <Pie data={pieChartData} />}
           </div>
-          <div>
-            {booksBarChartData && (<Bar style={{
-              display: "block", boxSizing: "border-box", height: "500px", width: "900px"
-            }} width={1800} height={900} options={barChartOptions} data={booksBarChartData} />)}
+
+          <div
+            className='w-full lg:w-2/3 overflow-x-auto'
+            style={{ maxWidth: '100%' }}
+          >
+            {booksBarChartData && (
+              <Bar
+                height={500}
+                options={barChartOptions}
+                data={booksBarChartData}
+              />
+            )}
           </div>
-          {/* <div>
-            {authorsBarChartData && (<Bar width={700} options={barChartOptions} data={authorsBarChartData} />)}
-          </div> */}
         </div>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
